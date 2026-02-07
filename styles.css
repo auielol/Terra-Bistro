@@ -1,0 +1,243 @@
+/* Terra Bistro - Tablet Landscape Optimized */
+:root {
+    --bg-color: #1a1c2c;
+    --surface-color: #24273d;
+    --accent-color: #3d447d;
+    --text-color: #d1d5db;
+    --primary-action: #5865f2;
+    --white: #ffffff;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 1000px; /* Wider for Landscape */
+    background-color: var(--surface-color);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    border: 1px solid var(--accent-color);
+}
+
+.header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    border-bottom: 1px solid var(--accent-color);
+    padding-bottom: 15px;
+}
+
+h1 { margin: 0; color: var(--white); font-size: 1.8rem; }
+
+/* Grid Layout for Menu Items */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two columns for tablet */
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px;
+    background: #2d314d;
+    border-radius: 12px;
+    border: 1px solid transparent;
+}
+
+.item-info { flex: 1; }
+.item-name { display: block; font-weight: 600; color: var(--white); }
+.item-price { font-size: 0.85rem; color: #9ca3af; }
+
+/* Stepper Controls */
+.stepper {
+    display: flex;
+    align-items: center;
+    background: var(--bg-color);
+    border-radius: 30px;
+    padding: 4px;
+    border: 1px solid var(--accent-color);
+    margin-left: 10px;
+}
+
+.btn-step {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent-color);
+    color: var(--white);
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-step:disabled { opacity: 0.2; }
+.qty-val { width: 30px; text-align: center; font-weight: 700; color: var(--white); }
+
+/* Checkout Section - Wide Sidebar/Footer */
+.checkout-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Split Config and Total */
+    gap: 20px;
+    background: rgba(0,0,0,0.2);
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.config-inputs input {
+    width: 100%;
+    padding: 12px;
+    background: var(--bg-color);
+    border: 1px solid var(--accent-color);
+    border-radius: 8px;
+    color: var(--white);
+    margin-bottom: 10px;
+}
+
+.summary-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--white);
+}
+
+.newsletter-opt {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.newsletter-opt.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+    filter: grayscale(1);
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 15px;
+    background: var(--primary-action);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.action-row {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-clear {
+    flex: 1;
+    padding: 15px;
+    background: transparent;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-clear:hover {
+    background: rgba(231, 76, 60, 0.1);
+}
+
+.btn-submit {
+    flex: 2; /* Makes the order button larger/more prominent */
+    padding: 15px;
+    background: var(--primary-action);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+/* Floating Voucher Icon */
+.voucher-container {
+    position: fixed;
+    bottom: 25px;
+    left: 25px;
+    z-index: 100;
+}
+
+#voucher-icon {
+    width: 60px;
+    height: auto;
+    cursor: pointer;
+    transform: rotate(10deg); /* Slight tilt to the right */
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3));
+}
+
+#voucher-icon:hover {
+    transform: rotate(5deg) scale(1.1);
+}
+
+/* Voucher Input Popover */
+.voucher-input-box {
+    display: none; /* Hidden by default */
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    background: var(--surface-color);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--accent-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    width: 250px;
+}
+
+.voucher-input-box.active {
+    display: block;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.discount-tag {
+    color: #2ecc71;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+@media (max-width: 768px) {
+    .menu-grid { grid-template-columns: 1fr; }
+    .checkout-section { grid-template-columns: 1fr; }
+}

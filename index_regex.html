@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terra Bistro | Tablet Menu</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header-row">
+        <h1>Terra Bistro</h1>
+        <div style="text-align: right; color: #9ca3af; font-size: 0.8rem;">Digital POS v2.0</div>
+    </div>
+
+    <div class="menu-grid" id="menu">
+        <script>
+            const dishes = [
+                { name: "Dragon’s Breath Ramen", price: 15 },
+                { name: "Crystalized Honey Tart", price: 8 },
+                { name: "Originium Spice Skewers", price: 12 },
+                { name: "Lungmen Dumplings", price: 10 },
+                { name: "Siesta Beach Soda", price: 5 },
+                { name: "Kjerag Mountain Tea", price: 4 },
+                { name: "Laterano Sweet Rolls", price: 9 },
+                { name: "Sargon Wild Greens", price: 11 },
+                { name: "Victorian Beef Wellington", price: 25 },
+                { name: "Rim Billiton Carrot Cake", price: 7 }
+            ];
+
+            document.write(dishes.map(dish => `
+                <div class="menu-item" data-name="${dish.name}" data-price="${dish.price}">
+                    <div class="item-info">
+                        <span class="item-name">${dish.name}</span>
+                        <span class="item-price">$${dish.price.toFixed(2)}</span>
+                    </div>
+                    <div class="stepper">
+                        <button class="btn-step" onclick="changeQty(this, -1)" disabled>−</button>
+                        <span class="qty-val">0</span>
+                        <button class="btn-step" onclick="changeQty(this, 1)">+</button>
+                    </div>
+                </div>
+            `).join(''));
+        </script>
+    </div>
+
+    <div class="checkout-section">
+        <div class="config-inputs">
+            <input type="text" id="tableNum" placeholder="Table Number (mock)">
+            <input type="email" id="customerEmail" placeholder="Guest Email (Required for Newsletter)">
+        </div>
+
+        <div class="summary-box">
+            <div class="newsletter-opt disabled" id="newsletterWrapper">
+                <input type="checkbox" id="newsletter" disabled>
+                <label for="newsletter">Join 'Taste of Terra' Newsletter</label>
+            </div>
+            
+            <div class="total-row">
+                <span>Total:</span>
+                <span id="grandTotal">$0.00</span>
+            </div>
+
+            <div class="action-row">
+                <button class="btn-clear" onclick="resetMenu()">Clear Order</button>
+                <button class="btn-submit" onclick="submitOrder()">Place Order</button>
+            </div>
+
+            <div class="voucher-container">
+                <div id="voucher-popover" class="voucher-input-box">
+                    <label style="font-size: 0.8rem; color: #9ca3af;">Enter Promo Code</label>
+                    <div style="display: flex; gap: 8px; margin-top: 5px;">
+                        <input type="text" id="voucherCode" placeholder="BISTRO20" style="margin:0; padding: 8px;">
+                        <button onclick="validateVoucher()" style="width: auto; padding: 8px 12px; margin:0; font-size: 0.8rem;">Apply</button>
+                    </div>
+                    <div id="voucherStatus" class="discount-tag"></div>
+                </div>
+                <img src="assets/voucher.png" id="voucher-icon" alt="Apply Voucher" onclick="toggleVoucher()">
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+<script>
+    const WEBHOOK_URL = 'https://hook.eu1.make.com/qea4bxs6xxabs7hkjxxcrwrapg4jphiv';
+
+    function changeQty(btn, delta) {
+        const stepper = btn.parentElement;
+        const qtySpan = stepper.querySelector('.qty-val');
+        const minusBtn = stepper.querySelector('button:first-child');
+        let qty = parseInt(qtySpan.innerText) + delta;
+        qty = Math.max(0, qty);
+        qtySpan.innerText = qty;
+        minusBtn.disabled = (qty === 0);
+        calculateTotal();
+    }
+
+    function resetMenu() {
+        if (!confirm("Are you sure you want to clear your entire order?")) return;
+
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.querySelector('.qty-val').innerText = "0";
+            
+            item.querySelector('.btn-step:first-child').disabled = true;
+        });
+
+        calculateTotal();
+        
+        document.getElementById('customerEmail').value = "";
+        document.getElementById('newsletter').checked = false;
+        document.getElementById('newsletterWrapper').classList.add('disabled');
+    }
+
+    let activeDiscount = 0;
+
+    function toggleVoucher() {
+        document.getElementById('voucher-popover').classList.toggle('active');
+    }
+
+    async function validateVoucher() {
+        const code = document.getElementById('voucherCode').value;
+        const status = document.getElementById('voucherStatus');
+        const webhook = "https://hook.eu1.make.com/t9r49l3p0jkvtmfpff47zkkfb381me3h";
+
+        status.innerText = "Checking...";
+        
+        try {
+            const response = await fetch(webhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: code })
+            });
+            const data = await response.json();
+
+            if (data.valid) {
+                activeDiscount = data.discountPercent / 100;
+                status.style.color = "#2ecc71";
+                status.innerText = `Code Applied: ${data.discountPercent}% OFF`;
+                calculateTotal();
+            } else {
+                status.style.color = "#e74c3c";
+                status.innerText = "Invalid or Expired Code";
+                activeDiscount = 0;
+                calculateTotal();
+            }
+        } catch (err) {
+            status.innerText = "Connection Error";
+        }
+    }
+
+    function calculateTotal() {
+        let subtotal = 0;
+        document.querySelectorAll('.menu-item').forEach(item => {
+            subtotal += (parseFloat(item.dataset.price) * parseInt(item.querySelector('.qty-val').innerText));
+        });
+        
+        const discountAmount = subtotal * activeDiscount;
+        const finalTotal = subtotal - discountAmount;
+        
+        document.getElementById('grandTotal').innerText = `$${finalTotal.toFixed(2)}`;
+    }
+
+    const emailInput = document.getElementById('customerEmail');
+    const newsBox = document.getElementById('newsletter');
+    const newsWrap = document.getElementById('newsletterWrapper');
+
+    emailInput.addEventListener('input', () => {
+        const hasEmail = emailInput.value.trim().length > 0;
+        newsBox.disabled = !hasEmail;
+        if (hasEmail) {
+            newsWrap.classList.remove('disabled');
+        } else {
+            newsWrap.classList.add('disabled');
+            newsBox.checked = false;
+        }
+    });
+
+    async function submitOrder() {
+        const items = Array.from(document.querySelectorAll('.menu-item'))
+            .map(item => ({
+                product: item.dataset.name,
+                qty: parseInt(item.querySelector('.qty-val').innerText),
+                unitPrice: parseFloat(item.dataset.price)
+            })).filter(i => i.qty > 0);
+
+        if (items.length === 0) return alert("Select items first!");
+        
+        // FIX: Changed 'email' to 'customerEmail'
+        const payload = {
+            tableNumber: document.getElementById('tableNum').value,
+            customerEmail: document.getElementById('customerEmail').value, 
+            newsletter: document.getElementById('newsletter').checked,
+            items: items,
+            orderTime: new Date().toISOString()
+        };
+
+        try {
+            const res = await fetch(WEBHOOK_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', // Add this if you face CORS issues with Make.com
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload)
+            });
+            alert("Order Sent!"); 
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Could not connect to the server.");
+        }
+    }
+</script>
+</body>
+</html>

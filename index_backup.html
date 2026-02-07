@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Terra Bistro - Digital Menu</title>
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #fdfcfb; padding: 20px; display: flex; justify-content: center; }
+        .menu-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 500px; width: 100%; }
+        .item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee; }
+        .qty { width: 40px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group { margin-top: 20px; }
+        input[type="text"], input[type="email"] { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; background: #27ae60; color: white; padding: 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="menu-card">
+    <h1 style="text-align: center; color: #2c3e50;">Terra Bistro</h1>
+    
+    <input type="text" id="tableNum" placeholder="Table Number">
+
+    <div id="menu-items">
+        <div class="item"><span>Dragon’s Breath Ramen ($15)</span><input type="number" class="qty" data-name="Dragon’s Breath Ramen" data-price="15" value="0"></div>
+        <div class="item"><span>Crystalized Honey Tart ($8)</span><input type="number" class="qty" data-name="Crystalized Honey Tart" data-price="8" value="0"></div>
+        <div class="item"><span>Originium Spice Skewers ($12)</span><input type="number" class="qty" data-name="Originium Spice Skewers" data-price="12" value="0"></div>
+        <div class="item"><span>Lungmen Dumplings ($10)</span><input type="number" class="qty" data-name="Lungmen Dumplings" data-price="10" value="0"></div>
+        <div class="item"><span>Siesta Beach Soda ($5)</span><input type="number" class="qty" data-name="Siesta Beach Soda" data-price="5" value="0"></div>
+        <div class="item"><span>Kjerag Mountain Tea ($4)</span><input type="number" class="qty" data-name="Kjerag Mountain Tea" data-price="4" value="0"></div>
+        <div class="item"><span>Laterano Sweet Rolls ($9)</span><input type="number" class="qty" data-name="Laterano Sweet Rolls" data-price="9" value="0"></div>
+        <div class="item"><span>Sargon Wild Greens ($11)</span><input type="number" class="qty" data-name="Sargon Wild Greens" data-price="11" value="0"></div>
+        <div class="item"><span>Victorian Beef Wellington ($25)</span><input type="number" class="qty" data-name="Victorian Beef Wellington" data-price="25" value="0"></div>
+        <div class="item"><span>Rim Billiton Carrot Cake ($7)</span><input type="number" class="qty" data-name="Rim Billiton Carrot Cake" data-price="7" value="0"></div>
+    </div>
+
+    <div class="form-group">
+        <input type="email" id="email" placeholder="Email Address (Optional)">
+        <label><input type="checkbox" id="newsletter"> Subscribe to meal recommendations</label>
+    </div>
+
+    <button onclick="placeOrder()">Place Order</button>
+</div>
+
+<script>
+    // PASTE YOUR MAKE.COM URL BELOW
+    const WEBHOOK_URL = 'https://hook.eu1.make.com/qea4bxs6xxabs7hkjxxcrwrapg4jphiv';
+
+    async function placeOrder() {
+        const items = Array.from(document.querySelectorAll('.qty'))
+            .filter(i => i.value > 0)
+            .map(i => ({ 
+                product: i.dataset.name, 
+                qty: parseInt(i.value), 
+                unitPrice: parseInt(i.dataset.price) 
+            }));
+
+        if (items.length === 0) {
+            alert("Please select at least one item.");
+            return;
+        }
+
+        const payload = {
+            tableNumber: document.getElementById('tableNum').value,
+            customerEmail: document.getElementById('email').value,
+            newsletter: document.getElementById('newsletter').checked,
+            items: items,
+            orderTime: new Date().toISOString()
+        };
+
+        try {
+            const res = await fetch(WEBHOOK_URL, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify(payload)
+            });
+            alert(res.ok ? "Order Sent!" : "Error sending order.");
+        } catch (error) {
+            console.error("Fetch error:", error);
+            alert("Could not connect to the server.");
+        }
+    }
+</script>
+</body>
+</html>
